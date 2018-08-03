@@ -113,25 +113,23 @@ func main() {
 	e := echo.New()
 
 	//Endpoint and response
-
 	//Grouping and middleware
 
 	g := e.Group("/admin")
-	//middleware 추가 방식 #1
-	//g :=e.Group("/admin", middleware.Logger())
 
 	//middleware 추가 방식 #2
 	// This logs the server interaction
-	//g.Use(middleware.Logger())
 	g.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
 		Format: `[${time_rfc3339}] ${status} ${method} ${host}${path} ${latency_human}` + "\n",
 	}))
 
-
-	//middleware 추가 방식 #3 : 추천 안함
-	//g.GET("/main", mainAdmin, middleware.Logger())
-
-
+	g.Use(middleware.BasicAuth(func(username, password string, c echo.Context) (bool, error) {
+		//check in the DB
+		if username == "foo" && password == "bar" {
+			return true, nil
+		}
+		return false, nil
+	}))
 
 
 	g.GET("/main", mainAdmin)
@@ -146,3 +144,31 @@ func main() {
 	//서버 시작
 	e.Start(":8000")
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
