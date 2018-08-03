@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
 )
 
 type Cat struct {
@@ -101,6 +102,10 @@ func addHamster(c echo.Context) error {
 
 }
 
+func mainAdmin(c echo.Context) error {
+	return c.String(http.StatusOK, "your are in the admin page")
+}
+
 func main() {
 	fmt.Println("Welcomt to the server")
 
@@ -108,6 +113,29 @@ func main() {
 	e := echo.New()
 
 	//Endpoint and response
+
+	//Grouping and middleware
+
+	g := e.Group("/admin")
+	//middleware 추가 방식 #1
+	//g :=e.Group("/admin", middleware.Logger())
+
+	//middleware 추가 방식 #2
+	// This logs the server interaction
+	//g.Use(middleware.Logger())
+	g.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: `[${time_rfc3339}] ${status} ${method} ${host}${path} ${latency_human}` + "\n",
+	}))
+
+
+	//middleware 추가 방식 #3 : 추천 안함
+	//g.GET("/main", mainAdmin, middleware.Logger())
+
+
+
+
+	g.GET("/main", mainAdmin)
+
 	e.GET("/", yallo)
 	e.GET("/cats/:data", getCats)
 
