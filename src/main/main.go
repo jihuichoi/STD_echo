@@ -103,18 +103,28 @@ func addHamster(c echo.Context) error {
 }
 
 func mainAdmin(c echo.Context) error {
-	return c.String(http.StatusOK, "your are in the admin page")
+	return c.String(http.StatusOK, "you are in the admin page")
+}
+
+//------------------------------ middlewares ------------------------------//
+func ServerHeader(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error{
+		c.Response().Header().Set(echo.HeaderServer, "BlueBot/1.0")
+		c.Response().Header().Set("newHeader", "is new!!")
+		return next(c)
+	}
 }
 
 func main() {
-	fmt.Println("Welcomt to the server")
+	fmt.Println("Welcome to the server")
 
 	//echo 프레임워크 시작
 	e := echo.New()
 
+	e.Use(ServerHeader)
+
 	//Endpoint and response
 	//Grouping and middleware
-
 	g := e.Group("/admin")
 
 	//middleware 추가 방식 #2
