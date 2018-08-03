@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/middleware"
 	"time"
 	"strings"
+	"github.com/dgrijalva/jwt-go"
 )
 
 type Cat struct {
@@ -26,6 +27,11 @@ type Dog struct {
 type Hamster struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
+}
+
+type JwtClaims struct {
+	Name string `json:"name"`
+	jwt.StandardClaims
 }
 
 func yallo(c echo.Context) error {
@@ -129,10 +135,39 @@ func login(c echo.Context) error {
 
 		c.SetCookie(cookie)
 
-		return c.String(http.StatusOK, "you were logged in!")
+		//TODO:  create jwt token
+		token, err := createJwtToken()
+		if err != nil {
+			log.Println("Error Creating JWT token", err)
+			return c.String(http.StatusInternalServerError, "something went wrong")
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{
+			"message": "You are logged in!",
+			"token": token,
+		})
+		//return c.String(http.StatusOK, "you were logged in!")
 	}
 
 	return c.String(http.StatusUnauthorized, "Your username or password were wrong!")
+}
+
+func createJwtToken() (string, error) {
+	claims := JwtClaims{
+		"jack",
+		jwt.StandardClaims{
+			Id: "main_user_id",
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	}
+
+	rawToken := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+
+	token, err := rawToken.SignedString([]byte("mySecret"))
+	if err != nil {
+		return "", err
+	}
+	return token, nil
 }
 
 //------------------------------ middlewares ------------------------------//
